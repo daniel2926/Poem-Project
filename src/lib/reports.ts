@@ -1,7 +1,8 @@
-// Report logic kept out of the components: building a new report and
-// filtering existing ones. Pure functions the hooks and views call.
+// Report logic kept out of the components: building a new report, filtering,
+// and counting. Pure functions the hooks and screens call.
 
 import type { Category, Report, Status } from '../types';
+import { STATUSES } from '../constants';
 import { todayISO } from './format';
 
 // The fields a student fills in on the form.
@@ -42,4 +43,11 @@ export function filterReports(reports: Report[], filter: ReportFilter): Report[]
       (filter.status === 'All' || r.status === filter.status) &&
       (filter.category === 'All' || r.category === filter.category),
   );
+}
+
+/** Count how many reports are in each status (for the admin summary). */
+export function countByStatus(reports: Report[]): Record<Status, number> {
+  const counts = Object.fromEntries(STATUSES.map((s) => [s, 0])) as Record<Status, number>;
+  for (const r of reports) counts[r.status]++;
+  return counts;
 }

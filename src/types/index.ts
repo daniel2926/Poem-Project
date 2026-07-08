@@ -1,8 +1,8 @@
 // Shared data types for the whole app.
 
-// The three previewable roles. A dorm head is a Student with one extra
-// permission (managing the cleaning schedule) — not a separate authority.
-export type Role = 'student' | 'dormHead' | 'admin';
+// Exactly two roles. A dorm head is a Student with `isDormHead: true` —
+// not a separate role/authority.
+export type Role = 'student' | 'admin';
 
 export type Category = 'Room Maintenance' | 'Facility Issue' | 'Gas Replacement';
 
@@ -23,11 +23,22 @@ export type Day =
   | 'Saturday'
   | 'Sunday';
 
+// A user account (mock auth — password stored in plain text, demo only).
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+  role: Role;
+  isDormHead: boolean;
+  dorm: string;
+}
+
 export interface Report {
   id: string;
   title: string;
   category: Category;
-  student: string;
+  student: string; // the student's name (links a report to its author)
   status: Status;
   date: string; // ISO 'YYYY-MM-DD'
   location: string;
@@ -38,3 +49,6 @@ export interface Report {
 
 // A weekly cleaning schedule: day of week -> list of assigned student names.
 export type Schedule = Record<string, string[]>;
+
+// Which pre-login screen is showing (splash/home/auth flow).
+export type Screen = 'splash' | 'home' | 'signin' | 'signup';

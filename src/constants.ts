@@ -1,12 +1,14 @@
 // Single source of truth for status values, badge colors, and other shared
 // constants. Change a color or label here and it updates everywhere.
 
-import type { Category, Day, Role, Status } from './types';
+import type { Category, Day, Status } from './types';
 
-export const DORM = 'Dorm A';
+// Default dorm label + the dorms a new student can choose at sign-up.
+export const DEFAULT_DORM = 'Dorm A';
+export const DORMS: string[] = ['Dorm A', 'Dorm B', 'Dorm C'];
 
-// The "signed-in" student for the Student / Dorm Head previews.
-export const CURRENT_STUDENT = 'Andi Pratama';
+// How long the splash screen shows before auto-advancing (ms).
+export const SPLASH_DURATION = 1800;
 
 export const CATEGORIES: Category[] = [
   'Room Maintenance',
@@ -32,12 +34,6 @@ export const STATUS_STYLES: Record<Status, { badge: string; dot: string }> = {
   Rejected: { badge: 'bg-red-100 text-red-800', dot: 'bg-red-500' },
   Cancelled: { badge: 'bg-slate-100 text-slate-400', dot: 'bg-slate-300' },
 };
-
-export const ROLES: { key: Role; label: string }[] = [
-  { key: 'student', label: 'Student' },
-  { key: 'dormHead', label: 'Student (Dorm Head)' },
-  { key: 'admin', label: 'Admin' },
-];
 
 export const DAYS: Day[] = [
   'Monday',

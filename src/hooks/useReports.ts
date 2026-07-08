@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import type { Report } from '../types';
 import { INITIAL_REPORTS } from '../data/reports';
-import { CURRENT_STUDENT } from '../constants';
 import { createReport, type NewReportInput } from '../lib/reports';
 
 // Owns the reports list and the two ways it changes:
@@ -10,8 +9,8 @@ import { createReport, type NewReportInput } from '../lib/reports';
 export function useReports() {
   const [reports, setReports] = useState<Report[]>(INITIAL_REPORTS);
 
-  function addReport(input: NewReportInput) {
-    setReports((prev) => [createReport(input, CURRENT_STUDENT), ...prev]);
+  function addReport(input: NewReportInput, student: string) {
+    setReports((prev) => [createReport(input, student), ...prev]);
   }
 
   function updateReport(id: string, changes: Partial<Report>) {

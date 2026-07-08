@@ -1,5 +1,5 @@
 import type { Schedule } from '../types';
-import { DAYS, DORM } from '../constants';
+import { DAYS, DEFAULT_DORM } from '../constants';
 import { Icon } from './Icon';
 import { Section } from './Section';
 
@@ -36,6 +36,7 @@ function AddAssignment({ day, available, onAdd }: AddAssignmentProps) {
 interface CleaningScheduleProps {
   schedule: Schedule;
   editable: boolean;
+  dorm?: string;
   roster?: string[];
   onAdd?: (day: string, name: string) => void;
   onRemove?: (day: string, name: string) => void;
@@ -45,6 +46,7 @@ interface CleaningScheduleProps {
 export function CleaningSchedule({
   schedule,
   editable,
+  dorm = DEFAULT_DORM,
   roster = [],
   onAdd,
   onRemove,
@@ -57,7 +59,7 @@ export function CleaningSchedule({
             <Icon name="broom" className="h-5 w-5 text-navy" />
             {editable ? 'Manage Cleaning Schedule' : 'Cleaning Schedule'}
           </h2>
-          <p className="mt-0.5 text-sm text-slate-500">Weekly cleaning duties for {DORM}.</p>
+          <p className="mt-0.5 text-sm text-slate-500">Weekly cleaning duties for {dorm}.</p>
         </div>
         {!editable && (
           <span className="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
@@ -95,9 +97,7 @@ export function CleaningSchedule({
                   </span>
                 ))}
               </div>
-              {editable && onAdd && (
-                <AddAssignment day={day} available={available} onAdd={onAdd} />
-              )}
+              {editable && onAdd && <AddAssignment day={day} available={available} onAdd={onAdd} />}
             </div>
           );
         })}
