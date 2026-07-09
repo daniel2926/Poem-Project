@@ -4,7 +4,7 @@
 //   - no student appears twice (each is placed once)
 //   - assignments are spread as evenly as possible across all places
 //   - every place is filled once before any place gets a second student
-//   - the order is shuffled so clicking "Generate" again gives a fresh result
+//   - the order is shuffled so each edit produces a fresh assignment
 
 import type { PlaceSchedule } from '../types';
 
@@ -38,7 +38,21 @@ export function generateSchedule(students: string[], places: string[]): PlaceSch
   return result;
 }
 
-/** True once at least one place has an assigned student. */
-export function isGenerated(schedule: PlaceSchedule): boolean {
-  return Object.values(schedule).some((names) => names.length > 0);
+/** One student's assignment: the place they're on and who's on it with them. */
+export interface MyAssignment {
+  place: string;
+  teammates: string[]; // others assigned to the same place
+}
+
+/** Find a student's own cleaning assignment, or null if they aren't assigned. */
+export function assignmentFor(
+  student: string,
+  schedule: PlaceSchedule,
+): MyAssignment | null {
+  for (const [place, names] of Object.entries(schedule)) {
+    if (names.includes(student)) {
+      return { place, teammates: names.filter((n) => n !== student) };
+    }
+  }
+  return null;
 }

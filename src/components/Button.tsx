@@ -8,9 +8,9 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANTS: Record<Variant, string> = {
-  primary: 'bg-navy text-white hover:bg-navy-dark',
-  secondary: 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50',
-  ghost: 'text-navy hover:bg-navy/5',
+  primary: 'bg-brand text-white shadow-soft hover:bg-brand-dark active:scale-[0.98]',
+  secondary: 'border border-slate-200 bg-white text-slate-700 hover:bg-sky-soft/60',
+  ghost: 'text-brand hover:bg-brand/5',
 };
 
 // Shared button so every screen's buttons look and behave the same.
@@ -22,7 +22,7 @@ export function Button({
 }: ButtonProps) {
   return (
     <button
-      className={`rounded-lg px-5 py-2.5 text-sm font-medium transition disabled:opacity-50 ${
+      className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition disabled:opacity-50 ${
         VARIANTS[variant]
       } ${fullWidth ? 'w-full' : ''} ${className}`}
       {...rest}

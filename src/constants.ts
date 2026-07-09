@@ -47,9 +47,9 @@ export const DAYS: Day[] = [
 
 // Shared input styles (kept here so every form field looks the same).
 export const inputClass =
-  'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 ' +
-  'placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-navy/30 focus:border-navy transition';
+  'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 ' +
+  'placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition';
 
 export const filterSelectClass =
-  'rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-600 ' +
-  'focus:outline-none focus:ring-2 focus:ring-navy/30 focus:border-navy transition';
+  'rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 ' +
+  'focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition';

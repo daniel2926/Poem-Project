@@ -21,6 +21,16 @@ export function todayISO(): string {
   return `${t.getFullYear()}-${mm}-${dd}`;
 }
 
+/** Now as a local 'YYYY-MM-DDTHH:mm' datetime string. */
+export function nowISO(): string {
+  const t = new Date();
+  const mm = String(t.getMonth() + 1).padStart(2, '0');
+  const dd = String(t.getDate()).padStart(2, '0');
+  const hh = String(t.getHours()).padStart(2, '0');
+  const min = String(t.getMinutes()).padStart(2, '0');
+  return `${t.getFullYear()}-${mm}-${dd}T${hh}:${min}`;
+}
+
 /** 'YYYY-MM-DDTHH:mm' -> 'Jul 8, 2026 · 14:30'. Falls back to the raw value. */
 export function formatDateTime(iso: string): string {
   if (!iso) return '—';

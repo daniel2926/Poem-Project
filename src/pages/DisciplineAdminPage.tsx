@@ -26,8 +26,14 @@ export function DisciplineAdminPage({ records, onRecord }: DisciplineAdminPagePr
   const [scheduleAt, setScheduleAt] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState('');
+  const [search, setSearch] = useState(''); // filters the "Student points" list
 
   const violation = VIOLATIONS.find((v) => v.id === violationId) ?? VIOLATIONS[0];
+
+  // Students matching the search box (case-insensitive, by name).
+  const filteredRoster = ROSTER.filter((name) =>
+    name.toLowerCase().includes(search.trim().toLowerCase()),
+  );
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -66,7 +72,7 @@ export function DisciplineAdminPage({ records, onRecord }: DisciplineAdminPagePr
           </p>
 
           {success && (
-            <div className="mt-4 flex items-start gap-2 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-800">
+            <div className="mt-4 flex items-start gap-2 rounded-xl bg-mint-soft px-3 py-2 text-sm text-green-800">
               <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0" />
               <span>{success}</span>
             </div>
@@ -121,7 +127,7 @@ export function DisciplineAdminPage({ records, onRecord }: DisciplineAdminPagePr
 
             <button
               type="submit"
-              className="w-full rounded-lg bg-navy px-5 py-2.5 text-sm font-medium text-white transition hover:bg-navy-dark sm:w-auto"
+              className="w-full rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white shadow-soft transition hover:bg-brand-dark active:scale-[0.98] sm:w-auto"
             >
               Record & Deduct {violation.points} pts
             </button>
@@ -132,26 +138,45 @@ export function DisciplineAdminPage({ records, onRecord }: DisciplineAdminPagePr
         <div className="space-y-6">
           <Section>
             <h2 className="mb-3 text-lg font-semibold text-slate-900">Student points</h2>
-            <div className="space-y-1.5">
-              {ROSTER.map((name) => {
-                const pts = pointsFor(name, records);
-                return (
-                  <div
-                    key={name}
-                    className="flex items-center justify-between rounded-lg px-3 py-2 text-sm odd:bg-slate-50"
-                  >
-                    <span className="text-slate-700">{name}</span>
-                    <span
-                      className={`font-semibold ${
-                        pts >= 90 ? 'text-green-600' : pts >= 70 ? 'text-amber-600' : 'text-red-600'
-                      }`}
-                    >
-                      {pts} pts
-                    </span>
-                  </div>
-                );
-              })}
+
+            {/* Search: filters the list below by name as you type. */}
+            <div className="relative mb-3">
+              <Icon
+                name="search"
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+              />
+              <input
+                className={inputClass + ' pl-9'}
+                placeholder="Search a student…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
             </div>
+
+            {filteredRoster.length === 0 ? (
+              <EmptyState text={`No student matches "${search}".`} />
+            ) : (
+              <div className="space-y-1.5">
+                {filteredRoster.map((name) => {
+                  const pts = pointsFor(name, records);
+                  return (
+                    <div
+                      key={name}
+                      className="flex items-center justify-between rounded-lg px-3 py-2 text-sm odd:bg-slate-50"
+                    >
+                      <span className="text-slate-700">{name}</span>
+                      <span
+                        className={`font-semibold ${
+                          pts >= 90 ? 'text-green-600' : pts >= 70 ? 'text-amber-600' : 'text-red-600'
+                        }`}
+                      >
+                        {pts} pts
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </Section>
 
           <Section>

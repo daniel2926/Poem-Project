@@ -1,79 +1,244 @@
-import type { PlaceSchedule } from '../types';
-import { CLEANING_PLACES } from '../data/schedule';
-import { isGenerated } from '../lib/schedule';
+import { useState, type FormEvent } from 'react';
+import type { AttendanceTask, PlaceSchedule } from '../types';
+import { inputClass } from '../constants';
 import { PageHeader } from '../components/PageHeader';
 import { Section } from '../components/Section';
 import { EmptyState } from '../components/EmptyState';
 import { Icon } from '../components/Icon';
+import { AttendancePanel } from '../components/AttendancePanel';
+
+// The attendance actions the dorm-head panel needs (passed straight through).
+export interface CleaningAttendance {
+  tasks: AttendanceTask[];
+  deadline: string;
+  deadlinePassed: boolean;
+  setDeadline: (value: string) => void;
+  approve: (student: string) => void;
+  reject: (student: string) => void;
+  endDeadlineNow: () => void;
+  confirmDemerit: (student: string) => void;
+  excuse: (student: string) => void;
+  confirmAllDemerits: () => void;
+}
 
 interface CleaningPageProps {
   schedule: PlaceSchedule;
-  onGenerate: () => void;
+  students: string[];
+  places: string[];
+  onAddStudent: (name: string) => void;
+  onRemoveStudent: (name: string) => void;
+  onAddPlace: (place: string) => void;
+  onRemovePlace: (place: string) => void;
+  onRegenerate: () => void; // reshuffle into a fresh assignment (dorm head)
   canEdit: boolean; // admin or dorm head
   dorm: string;
+  attendance: CleaningAttendance; // proof verification + demerits
 }
 
-// Cleaning Schedule service page. One "Generate Schedule" button assigns every
-// student to exactly one place, spread evenly; the result is shown as a table.
-export function CleaningPage({ schedule, onGenerate, canEdit, dorm }: CleaningPageProps) {
-  const generated = isGenerated(schedule);
-  const totalAssigned = Object.values(schedule).reduce((n, names) => n + names.length, 0);
+// Static accent class sets (Tailwind can't see dynamically-built class names).
+const ACCENTS = {
+  brand: {
+    icon: 'text-brand',
+    addBtn: 'bg-brand',
+    chip: 'bg-brand/10 text-brand',
+  },
+  mint: {
+    icon: 'text-mint',
+    addBtn: 'bg-mint',
+    chip: 'bg-mint-soft text-green-700',
+  },
+} as const;
+
+// A small "add + list of removable chips" editor used for both students and
+// places. Adding is one action (Enter or the + button); removing is one tap.
+function ChipEditor({
+  title,
+  icon,
+  placeholder,
+  items,
+  onAdd,
+  onRemove,
+  accent,
+}: {
+  title: string;
+  icon: string;
+  placeholder: string;
+  items: string[];
+  onAdd: (value: string) => void;
+  onRemove: (value: string) => void;
+  accent: keyof typeof ACCENTS;
+}) {
+  const [value, setValue] = useState('');
+  const style = ACCENTS[accent];
+
+  function submit(e: FormEvent) {
+    e.preventDefault();
+    if (!value.trim()) return;
+    onAdd(value);
+    setValue('');
+  }
+
+  return (
+    <div>
+      <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
+        <Icon name={icon} className={`h-4 w-4 ${style.icon}`} />
+        {title}
+        <span className="ml-auto text-xs font-normal text-slate-400">{items.length}</span>
+      </h3>
+
+      <form onSubmit={submit} className="flex gap-2">
+        <input
+          className={inputClass}
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+        />
+        <button
+          type="submit"
+          aria-label={`Add ${title}`}
+          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white transition hover:opacity-90 active:scale-95 ${style.addBtn}`}
+        >
+          <Icon name="plus" className="h-5 w-5" />
+        </button>
+      </form>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        {items.length === 0 && (
+          <span className="text-sm italic text-slate-400">Nothing added yet.</span>
+        )}
+        {items.map((item) => (
+          <span
+            key={item}
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium ${style.chip}`}
+          >
+            {item}
+            <button
+              onClick={() => onRemove(item)}
+              aria-label={`Remove ${item}`}
+              className="transition hover:text-red-600"
+            >
+              <Icon name="x" className="h-3.5 w-3.5" />
+            </button>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Cleaning Schedule page. The dorm head/admin adds students and places; the
+// assignment (each student to one place, evenly, no duplicates) re-generates
+// automatically on every change and is shown as a table below.
+export function CleaningPage({
+  schedule,
+  students,
+  places,
+  onAddStudent,
+  onRemoveStudent,
+  onAddPlace,
+  onRemovePlace,
+  onRegenerate,
+  canEdit,
+  dorm,
+  attendance,
+}: CleaningPageProps) {
+  const hasResult = places.length > 0 && students.length > 0;
 
   return (
     <div>
       <PageHeader
         title="Cleaning Schedule"
-        subtitle={`Weekly cleaning assignments for ${dorm}.`}
-        action={
-          canEdit && (
-            <button
-              onClick={onGenerate}
-              className="inline-flex items-center gap-2 rounded-lg bg-navy px-5 py-2.5 text-sm font-medium text-white transition hover:bg-navy-dark"
-            >
-              <Icon name="refresh" className="h-4 w-4" />
-              {generated ? 'Re-generate Schedule' : 'Generate Schedule'}
-            </button>
-          )
-        }
+        subtitle={`Cleaning assignments for ${dorm} — updates automatically.`}
       />
 
+      {canEdit && (
+        <Section className="mb-6">
+          <div className="mb-4 flex items-start gap-2 rounded-xl bg-mint-soft px-3 py-2 text-sm text-green-800">
+            <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>
+              Add students and places below — the schedule builds itself. Use Auto-generate for a
+              fresh shuffle.
+            </span>
+          </div>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <ChipEditor
+              title="Students"
+              icon="user"
+              placeholder="Add a student name…"
+              items={students}
+              onAdd={onAddStudent}
+              onRemove={onRemoveStudent}
+              accent="brand"
+            />
+            <ChipEditor
+              title="Places"
+              icon="broom"
+              placeholder="Add a cleaning place…"
+              items={places}
+              onAdd={onAddPlace}
+              onRemove={onRemovePlace}
+              accent="mint"
+            />
+          </div>
+        </Section>
+      )}
+
       <Section>
-        {!generated ? (
-          canEdit ? (
-            <EmptyState text='No schedule yet. Click "Generate Schedule" to assign every student to a cleaning place.' />
-          ) : (
-            <EmptyState text="No cleaning schedule has been generated yet." />
-          )
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-slate-900">Assignments</h2>
+          {canEdit && hasResult && (
+            <button
+              type="button"
+              onClick={onRegenerate}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-brand px-3.5 py-2 text-sm font-semibold text-white shadow-soft transition hover:bg-brand-dark active:scale-95"
+            >
+              <Icon name="refresh" className="h-4 w-4" />
+              Auto-generate
+            </button>
+          )}
+        </div>
+        {!hasResult ? (
+          <EmptyState
+            text={
+              canEdit
+                ? 'Add at least one student and one place to see the schedule.'
+                : 'No cleaning schedule yet.'
+            }
+          />
         ) : (
-          <div className="overflow-hidden rounded-xl border border-slate-200">
+          <div className="overflow-hidden rounded-2xl border border-slate-100">
             <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+              <thead className="bg-sky-soft/60 text-xs uppercase tracking-wide text-slate-500">
                 <tr>
                   <th className="px-4 py-3 font-semibold">Place</th>
                   <th className="px-4 py-3 font-semibold">Assigned students</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {CLEANING_PLACES.map((place) => {
+                {places.map((place) => {
                   const names = schedule[place] ?? [];
                   return (
                     <tr key={place} className="align-top">
                       <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-800">
                         <span className="inline-flex items-center gap-2">
-                          <Icon name="broom" className="h-4 w-4 text-navy" />
+                          <Icon name="broom" className="h-4 w-4 text-mint" />
                           {place}
                         </span>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-1.5">
-                          {names.map((name) => (
-                            <span
-                              key={name}
-                              className="rounded-full bg-navy/5 px-2.5 py-1 text-navy"
-                            >
-                              {name}
-                            </span>
-                          ))}
+                          {names.length === 0 ? (
+                            <span className="text-xs italic text-slate-400">—</span>
+                          ) : (
+                            names.map((name) => (
+                              <span
+                                key={name}
+                                className="rounded-full bg-brand/10 px-2.5 py-1 text-brand"
+                              >
+                                {name}
+                              </span>
+                            ))
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -84,20 +249,29 @@ export function CleaningPage({ schedule, onGenerate, canEdit, dorm }: CleaningPa
           </div>
         )}
 
-        {generated && (
+        {hasResult && (
           <p className="mt-4 text-xs text-slate-400">
-            {totalAssigned} student{totalAssigned !== 1 ? 's' : ''} assigned across{' '}
-            {CLEANING_PLACES.length} places · each student appears exactly once.
-            {canEdit && ' Click Re-generate for a fresh assignment.'}
+            {students.length} student{students.length !== 1 ? 's' : ''} across {places.length}{' '}
+            place{places.length !== 1 ? 's' : ''} · each student appears exactly once.
           </p>
         )}
       </Section>
 
-      {!canEdit && (
-        <p className="mt-3 text-xs text-slate-400">
-          The schedule is generated by the dorm head or admin. You can view your assignment here.
-        </p>
-      )}
+      {/* Attendance: verify proofs + handle missed duties (dorm head / admin). */}
+      <div className="mt-6">
+        <AttendancePanel
+          tasks={attendance.tasks}
+          deadline={attendance.deadline}
+          deadlinePassed={attendance.deadlinePassed}
+          onSetDeadline={attendance.setDeadline}
+          onApprove={attendance.approve}
+          onReject={attendance.reject}
+          onEndDeadline={attendance.endDeadlineNow}
+          onConfirmDemerit={attendance.confirmDemerit}
+          onExcuse={attendance.excuse}
+          onConfirmAll={attendance.confirmAllDemerits}
+        />
+      </div>
     </div>
   );
 }

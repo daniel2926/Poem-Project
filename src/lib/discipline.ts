@@ -30,6 +30,19 @@ export function createDiscipline(input: NewDisciplineInput): DisciplineRecord {
   };
 }
 
+/** A −1 demerit for a missed cleaning duty (confirmed by the dorm head). */
+export function createDemerit(student: string): DisciplineRecord {
+  return {
+    id: 'dm' + Date.now() + Math.random().toString(36).slice(2, 6),
+    student,
+    violation: 'Missed cleaning duty',
+    points: 1,
+    punishment: 'Cleaning attendance demerit',
+    scheduleAt: '',
+    date: todayISO(),
+  };
+}
+
 /**
  * Current points for a student: base points minus every recorded penalty.
  * (Points can't go below zero.)

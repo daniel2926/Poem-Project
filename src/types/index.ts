@@ -52,14 +52,53 @@ export interface Report {
 // cleaning place. `place -> assigned student names`.
 export type PlaceSchedule = Record<string, string[]>;
 
+// --- Cleaning attendance / proof ----------------------------------------
+// Each assigned student has one cleaning task. Lifecycle:
+//   'To do'    → student hasn't submitted proof yet
+//   'Pending'  → proof submitted, awaiting dorm-head verification
+//   'Approved' → dorm head verified the proof (done, no demerit)
+//   'Missed'   → no approved proof by the deadline
+//   'Excused'  → missed, but the dorm head waived the demerit
+//   'Demerit'  → missed, dorm head confirmed the −1 point deduction
+export type AttendanceStatus =
+  | 'To do'
+  | 'Pending'
+  | 'Approved'
+  | 'Missed'
+  | 'Excused'
+  | 'Demerit';
+
+export interface AttendanceTask {
+  id: string;
+  student: string; // student name
+  place: string; // their assigned cleaning place
+  status: AttendanceStatus;
+  photoName: string; // mock proof filename ('' until submitted)
+  submittedAt: string; // ISO datetime proof was submitted ('' if none)
+}
+
 // --- Consultation booking (PRIVATE to the student) ----------------------
-// A time slot with the campus consultant. Booking one flips `booked`.
+// A predefined, selectable time slot (label shown in the form).
 export interface ConsultationSlot {
   id: string;
-  date: string; // ISO 'YYYY-MM-DD'
-  time: string; // e.g. '09:00'
-  booked: boolean;
-  bookedBy: string | null; // student name, or null while open
+  label: string; // e.g. 'Mon, Jul 13 · 09:00'
+}
+
+// A campus counselor the student can pick.
+export interface Counselor {
+  id: string;
+  name: string;
+  focus: string; // short specialty label, e.g. 'Academic'
+}
+
+// A confirmed booking the student created via the form. PRIVATE — never shown
+// in any admin/discipline view.
+export interface Booking {
+  id: string;
+  student: string; // the student's account name (owner)
+  studentName: string; // name the student entered on the form
+  counselor: string; // counselor name
+  slotLabel: string; // chosen slot's label
 }
 
 // --- Dorm permission ----------------------------------------------------

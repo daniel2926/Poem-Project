@@ -8,19 +8,30 @@ State resets on refresh.
 Built with **Vite + React + TypeScript + Tailwind CSS** so it stays lightweight
 now and ports cleanly to a real backend (e.g. Supabase) later.
 
-## Navigation
+## Two platforms, by role
 
-After signing in, everyone lands on a **Home dashboard** that greets them and
-links to the services they can access. Each service is its **own page** reached
-from the sidebar (desktop) or the slide-in menu (mobile) — not one long scroll.
+The experience is styled differently for each role:
+
+- **Student → mobile app.** A phone-width frame (centered on desktop), a
+  friendly top bar, card-based screens, and a **bottom tab bar** for
+  navigation. Touch-friendly, one-tap actions.
+- **Admin → web dashboard.** A laptop-first layout with a fixed **sidebar**,
+  tables, filters, and stat cards.
+
+After signing in, each role lands on a **Home dashboard** that greets them and
+shows a card per service. Each service is its **own page** — not one long
+scroll.
+
+The look is warm and cheerful: a blue / light-blue / light-green palette,
+rounded approachable cards, and a little dorm illustration on the student home.
 
 ## Services
 
 | Service | Who | What |
 | --- | --- | --- |
 | **Reports** | Student / Admin | Students file & track damage reports; admin oversees all reports with filters. |
-| **Cleaning Schedule** | Admin / Dorm Head | One **Generate Schedule** button assigns every student to exactly one cleaning place — spread evenly, filling all places before doubling up. Re-generate for a fresh assignment. |
-| **Consultation** | Student | Book a private slot with the campus consultant. **Private** — never shown in any admin view. |
+| **Cleaning Schedule** | Admin / Dorm Head | Add students and places in two simple lists; the schedule **generates automatically** on every change — each student assigned to exactly one place, spread evenly, no duplicates. |
+| **Consultation** | Student | A quick form: pick a counselor, confirm your name, choose a predefined slot → it appears under **My Bookings**. **Private** — never shown in any admin view. |
 | **Dorm Permission** | Student / Admin | Students request leave (reason, destination, leave/return times) and track status; admin approves/rejects and the student's status updates. |
 | **Discipline** | Admin / Student | Admin records a violation (deducts points) and assigns a punishment + schedule; the student sees their own points, violations, and schedule. |
 
@@ -82,8 +93,8 @@ src/
 │   ├── users.ts         Accounts + demo logins
 │   ├── reports.ts       Seed damage reports
 │   ├── roster.ts        Students + starting discipline points
-│   ├── schedule.ts      Cleaning places (empty until "Generate")
-│   ├── consultations.ts Consultant time slots
+│   ├── schedule.ts      Starting cleaning places
+│   ├── consultations.ts Counselors + predefined slots
 │   ├── permissions.ts   Seed leave requests
 │   └── discipline.ts    Violations + seed discipline records
 ├── lib/                 Pure logic — no React
@@ -92,16 +103,19 @@ src/
 │   ├── permissions.ts   createPermission, getMyPermissions, badge styles
 │   └── discipline.ts    createDiscipline, pointsFor, recordsFor
 ├── hooks/               Stateful logic
-│   ├── useAuth  useReports  useSchedule
+│   ├── useAuth  useReports  useSchedule (editable lists + live assignment)
 │   └── usePermissions  useConsultations  useDiscipline
 ├── components/          One reusable component per file
-│   ├── AppShell         Sidebar (desktop) + mobile menu shell
+│   ├── StudentShell     Mobile-app frame + bottom tab bar (student)
+│   ├── AdminShell       Sidebar web dashboard (admin)
+│   ├── DormArt          Friendly inline-SVG dorm illustration
 │   ├── PageHeader  Logo  Button  Icon  StatusBadge  PermissionBadge
 │   └── Section  Field  EmptyState  ReportForm  ReportCard  ReportList  FilterBar  ReportDetail
 ├── screens/             Pre-login screens
 │   └── SplashScreen  HomeScreen  SignInScreen  SignUpScreen
-└── pages/               One service page per file (rendered inside AppShell)
-    ├── HomePage         Landing dashboard (greeting + service cards)
+└── pages/               One service page per file (rendered inside a shell)
+    ├── HomePage         Admin landing (dashboard cards)
+    ├── StudentHomePage  Student landing (dorm hero + app cards)
     ├── ReportsStudentPage  ReportsAdminPage
     ├── CleaningPage     ConsultationPage
     ├── PermissionStudentPage  PermissionAdminPage

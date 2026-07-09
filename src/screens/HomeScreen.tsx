@@ -1,6 +1,6 @@
-import { Logo } from '../components/Logo';
-import { Button } from '../components/Button';
-import { Section } from '../components/Section';
+import { Logo } from "../components/Logo";
+import { Button } from "../components/Button";
+import { Section } from "../components/Section";
 
 interface HomeScreenProps {
   onSignIn: () => void;
@@ -10,13 +10,16 @@ interface HomeScreenProps {
 // Landing screen: brand, subtitle, and the two entry points.
 export function HomeScreen({ onSignIn, onCreateAccount }: HomeScreenProps) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-10">
+    <div className="flex min-h-screen items-center justify-center px-4 py-10">
       <div className="w-full max-w-md">
         <div className="mb-6 flex flex-col items-center text-center">
           <Logo size="lg" variant="onLight" withText={false} />
-          <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-900">CampusFlow</h1>
+          <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-900">
+            MyDorm
+          </h1>
           <p className="mt-2 text-slate-500">
-            Report and manage dorm facility &amp; room damage — all in one place.
+            Your friendly dorm companion — reports, cleaning, consultations,
+            permissions &amp; more.
           </p>
         </div>
 

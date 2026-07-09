@@ -1,29 +1,29 @@
 import { useState } from 'react';
-import type { ConsultationSlot } from '../types';
-import { INITIAL_SLOTS } from '../data/consultations';
+import type { Booking } from '../types';
 
-// Owns consultation slots. Booking an open slot marks it confirmed for the
-// current student. This data is PRIVATE — it never reaches the admin views.
+// The fields the consultation form collects.
+export interface NewBookingInput {
+  studentName: string;
+  counselor: string;
+  slotLabel: string;
+}
+
+// Owns consultation bookings (starts empty). Submitting the form adds a
+// confirmed booking for the current student. This data is PRIVATE — it never
+// reaches the admin views.
 export function useConsultations() {
-  const [slots, setSlots] = useState<ConsultationSlot[]>(INITIAL_SLOTS);
+  const [bookings, setBookings] = useState<Booking[]>([]);
 
-  function book(slotId: string, student: string) {
-    setSlots((prev) =>
-      prev.map((s) =>
-        s.id === slotId && !s.booked ? { ...s, booked: true, bookedBy: student } : s,
-      ),
-    );
+  function addBooking(input: NewBookingInput, student: string) {
+    setBookings((prev) => [
+      { id: 'b' + Date.now(), student, ...input },
+      ...prev,
+    ]);
   }
 
-  function cancel(slotId: string, student: string) {
-    setSlots((prev) =>
-      prev.map((s) =>
-        s.id === slotId && s.bookedBy === student
-          ? { ...s, booked: false, bookedBy: null }
-          : s,
-      ),
-    );
+  function cancelBooking(id: string) {
+    setBookings((prev) => prev.filter((b) => b.id !== id));
   }
 
-  return { slots, book, cancel };
+  return { bookings, addBooking, cancelBooking };
 }

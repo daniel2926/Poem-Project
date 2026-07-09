@@ -41,7 +41,7 @@ export function SignInScreen({ onSignIn, onGoSignUp, onBack }: SignInScreenProps
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-10">
+    <div className="flex min-h-screen items-center justify-center px-4 py-10">
       <div className="w-full max-w-md">
         <div className="mb-6 flex flex-col items-center">
           <Logo size="md" variant="onLight" />

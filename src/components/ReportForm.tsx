@@ -58,7 +58,7 @@ export function ReportForm({ onSubmit }: ReportFormProps) {
       <p className="text-sm text-slate-500">Tell us what’s broken and we’ll track the fix.</p>
 
       {success && (
-        <div className="mt-4 flex items-start gap-2 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-800">
+        <div className="mt-4 flex items-start gap-2 rounded-xl bg-mint-soft px-3 py-2 text-sm text-green-800">
           <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0" />
           <span>{success}</span>
         </div>
@@ -128,7 +128,7 @@ export function ReportForm({ onSubmit }: ReportFormProps) {
         <div className="sm:col-span-2">
           <button
             type="submit"
-            className="w-full rounded-lg bg-navy px-5 py-2.5 font-medium text-white transition hover:bg-navy-dark sm:w-auto"
+            className="w-full rounded-xl bg-brand px-5 py-3 font-semibold text-white shadow-soft transition hover:bg-brand-dark active:scale-[0.98] sm:w-auto"
           >
             Submit Report
           </button>

@@ -25,7 +25,7 @@ function AdminRow({ report, onClick }: { report: Report; onClick: () => void }) 
   return (
     <button
       onClick={onClick}
-      className="flex w-full flex-col gap-2 rounded-xl border border-slate-200 bg-white p-4 text-left transition hover:border-navy hover:shadow-sm sm:flex-row sm:items-center sm:gap-4"
+      className="flex w-full flex-col gap-2 rounded-2xl border border-slate-100 bg-white p-4 text-left shadow-card transition hover:border-brand hover:shadow-soft sm:flex-row sm:items-center sm:gap-4"
     >
       <div className="min-w-0 flex-1">
         <div className="truncate font-medium text-slate-900">{report.title}</div>

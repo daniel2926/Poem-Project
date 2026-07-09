@@ -34,7 +34,7 @@ export function PermissionAdminPage({ requests, onSetStatus }: PermissionAdminPa
                 {r.destination}
               </div>
               <div className="text-slate-500">
-                Leave: {formatDateTime(r.leaveAt)} · Return: {formatDateTime(r.returnAt)}
+                {formatDateTime(r.leaveAt)} → {formatDateTime(r.returnAt)}
               </div>
             </div>
           </div>
@@ -71,20 +71,15 @@ export function PermissionAdminPage({ requests, onSetStatus }: PermissionAdminPa
 
   return (
     <div>
-      <PageHeader
-        title="Dorm Permission"
-        subtitle="Review students' requests to leave the dorm."
-      />
+      <PageHeader title="Dorm Permission" subtitle="Approve or reject requests." />
 
       <Section>
         <div className="mb-3 flex items-baseline justify-between">
           <h2 className="text-lg font-semibold text-slate-900">Pending</h2>
-          <span className="text-sm text-slate-400">
-            {pending.length} awaiting review
-          </span>
+          <span className="text-sm text-slate-400">{pending.length}</span>
         </div>
         {pending.length === 0 ? (
-          <EmptyState text="No pending requests. You're all caught up." />
+          <EmptyState text="All caught up." />
         ) : (
           <div className="space-y-3">
             {pending.map((r) => (
@@ -98,7 +93,7 @@ export function PermissionAdminPage({ requests, onSetStatus }: PermissionAdminPa
         <Section>
           <h2 className="mb-3 text-lg font-semibold text-slate-900">Decided</h2>
           {decided.length === 0 ? (
-            <EmptyState text="No approved or rejected requests yet." />
+            <EmptyState text="Nothing decided yet." />
           ) : (
             <div className="space-y-3">
               {decided.map((r) => (

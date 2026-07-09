@@ -28,12 +28,12 @@ export function PermissionStudentPage({ myRequests, onSubmit }: PermissionStuden
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const next: Record<string, string> = {};
-    if (!reason.trim()) next.reason = 'Please enter a reason.';
-    if (!destination.trim()) next.destination = 'Please enter a destination.';
-    if (!leaveAt) next.leaveAt = 'Please pick a leave date/time.';
-    if (!returnAt) next.returnAt = 'Please pick a return date/time.';
+    if (!reason.trim()) next.reason = 'Required';
+    if (!destination.trim()) next.destination = 'Required';
+    if (!leaveAt) next.leaveAt = 'Required';
+    if (!returnAt) next.returnAt = 'Required';
     if (leaveAt && returnAt && returnAt < leaveAt) {
-      next.returnAt = 'Return must be after the leave time.';
+      next.returnAt = 'Must be after leave';
     }
     setErrors(next);
     if (Object.keys(next).length > 0) {
@@ -47,24 +47,20 @@ export function PermissionStudentPage({ myRequests, onSubmit }: PermissionStuden
     setLeaveAt('');
     setReturnAt('');
     setErrors({});
-    setSuccess('Request submitted! Track its status below.');
+    setSuccess('Request sent.');
   }
 
   return (
     <div>
-      <PageHeader
-        title="Dorm Permission"
-        subtitle="Request permission to leave the dorm and track its status."
-      />
+      <PageHeader title="Dorm Permission" subtitle="Ask to leave · track status." />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Request form */}
+      <div className="space-y-6">
+        {/* Request form — full width, on top */}
         <Section>
           <h2 className="text-lg font-semibold text-slate-900">New request</h2>
-          <p className="text-sm text-slate-500">Tell the admin where you're going and when.</p>
 
           {success && (
-            <div className="mt-4 flex items-start gap-2 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-800">
+            <div className="mt-4 flex items-start gap-2 rounded-xl bg-mint-soft px-3 py-2 text-sm text-green-800">
               <Icon name="check" className="mt-0.5 h-4 w-4 shrink-0" />
               <span>{success}</span>
             </div>
@@ -74,7 +70,7 @@ export function PermissionStudentPage({ myRequests, onSubmit }: PermissionStuden
             <Field label="Reason" error={errors.reason}>
               <input
                 className={inputClass + (errors.reason ? ' border-red-400' : '')}
-                placeholder="e.g. Family visit"
+                placeholder="Family visit"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
               />
@@ -82,13 +78,13 @@ export function PermissionStudentPage({ myRequests, onSubmit }: PermissionStuden
             <Field label="Destination" error={errors.destination}>
               <input
                 className={inputClass + (errors.destination ? ' border-red-400' : '')}
-                placeholder="e.g. Bandung"
+                placeholder="Bandung"
                 value={destination}
                 onChange={(e) => setDestination(e.target.value)}
               />
             </Field>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Leave date & time" error={errors.leaveAt}>
+              <Field label="Leave" error={errors.leaveAt}>
                 <input
                   type="datetime-local"
                   className={inputClass + (errors.leaveAt ? ' border-red-400' : '')}
@@ -96,7 +92,7 @@ export function PermissionStudentPage({ myRequests, onSubmit }: PermissionStuden
                   onChange={(e) => setLeaveAt(e.target.value)}
                 />
               </Field>
-              <Field label="Return date & time" error={errors.returnAt}>
+              <Field label="Return" error={errors.returnAt}>
                 <input
                   type="datetime-local"
                   className={inputClass + (errors.returnAt ? ' border-red-400' : '')}
@@ -107,41 +103,36 @@ export function PermissionStudentPage({ myRequests, onSubmit }: PermissionStuden
             </div>
             <button
               type="submit"
-              className="w-full rounded-lg bg-navy px-5 py-2.5 text-sm font-medium text-white transition hover:bg-navy-dark sm:w-auto"
+              className="w-full rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white shadow-soft transition hover:bg-brand-dark active:scale-[0.98]"
             >
-              Submit Request
+              Send
             </button>
           </form>
         </Section>
 
-        {/* My requests */}
+        {/* My requests — full width, below the form */}
         <Section>
-          <div className="mb-3 flex items-baseline justify-between">
-            <h2 className="text-lg font-semibold text-slate-900">My Requests</h2>
-            <span className="text-sm text-slate-400">
-              {myRequests.length} request{myRequests.length !== 1 ? 's' : ''}
-            </span>
+          <div className="mb-3 flex items-baseline justify-between gap-2">
+            <h2 className="whitespace-nowrap text-lg font-semibold text-slate-900">My Requests</h2>
+            <span className="shrink-0 text-sm text-slate-400">{myRequests.length}</span>
           </div>
 
           {myRequests.length === 0 ? (
-            <EmptyState text="No requests yet. Submit one to see its status here." />
+            <EmptyState text="No requests yet." />
           ) : (
             <div className="space-y-3">
               {myRequests.map((r) => (
-                <div key={r.id} className="rounded-xl border border-slate-200 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="font-medium text-slate-900">{r.reason}</div>
-                      <div className="mt-1 flex items-center gap-1 text-sm text-slate-500">
-                        <Icon name="pin" className="h-3.5 w-3.5" />
-                        {r.destination}
-                      </div>
-                    </div>
+                <div key={r.id} className="rounded-2xl border border-slate-100 bg-white p-4 shadow-card">
+                  <div className="mb-1.5 flex justify-end">
                     <PermissionBadge status={r.status} />
                   </div>
-                  <div className="mt-3 grid grid-cols-1 gap-1 text-sm text-slate-500 sm:grid-cols-2">
-                    <span>Leave: {formatDateTime(r.leaveAt)}</span>
-                    <span>Return: {formatDateTime(r.returnAt)}</span>
+                  <div className="font-semibold text-slate-900">{r.reason}</div>
+                  <div className="mt-1 flex items-center gap-1 text-sm text-slate-500">
+                    <Icon name="pin" className="h-3.5 w-3.5 shrink-0" />
+                    {r.destination}
+                  </div>
+                  <div className="mt-1.5 text-sm text-slate-500">
+                    {formatDateTime(r.leaveAt)} → {formatDateTime(r.returnAt)}
                   </div>
                 </div>
               ))}

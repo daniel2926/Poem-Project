@@ -3,39 +3,48 @@ import type { PageId } from './nav';
 import { useAuth } from './hooks/useAuth';
 import { useReports } from './hooks/useReports';
 import { useSchedule } from './hooks/useSchedule';
+import { useAttendance } from './hooks/useAttendance';
 import { usePermissions } from './hooks/usePermissions';
 import { useConsultations } from './hooks/useConsultations';
 import { useDiscipline } from './hooks/useDiscipline';
+import { nowISO } from './lib/format';
 import { getMyReports } from './lib/reports';
 import { getMyPermissions } from './lib/permissions';
 import { SplashScreen } from './screens/SplashScreen';
 import { HomeScreen } from './screens/HomeScreen';
 import { SignInScreen } from './screens/SignInScreen';
 import { SignUpScreen } from './screens/SignUpScreen';
-import { AppShell } from './components/AppShell';
+import { StudentShell } from './components/StudentShell';
+import { AdminShell } from './components/AdminShell';
 import { HomePage } from './pages/HomePage';
+import { StudentHomePage } from './pages/StudentHomePage';
 import { ReportsStudentPage } from './pages/ReportsStudentPage';
 import { ReportsAdminPage } from './pages/ReportsAdminPage';
 import { CleaningPage } from './pages/CleaningPage';
+import { MyCleaningPage } from './pages/MyCleaningPage';
 import { ConsultationPage } from './pages/ConsultationPage';
 import { PermissionStudentPage } from './pages/PermissionStudentPage';
 import { PermissionAdminPage } from './pages/PermissionAdminPage';
 import { DisciplineAdminPage } from './pages/DisciplineAdminPage';
 import { DisciplineStudentPage } from './pages/DisciplineStudentPage';
+import { FaqPage } from './pages/FaqPage';
 
 // The pre-login flow (before an account is signed in).
 type AuthScreen = 'splash' | 'home' | 'signin' | 'signup';
 
 // App root: owns the mock auth, the pre-login flow, and — once signed in — the
-// per-service page routing inside the AppShell. All real logic lives in the
-// hooks (/hooks) and helpers (/lib); each service is its own page (/pages).
+// per-service page routing. Students get a mobile-app shell (bottom tabs);
+// admins get a web-dashboard shell (sidebar). Logic lives in /hooks and /lib.
 export function App() {
   const { currentUser, signIn, signUp, signOut } = useAuth();
   const { reports, addReport, updateReport } = useReports();
-  const { schedule, generate } = useSchedule();
+  const scheduleState = useSchedule();
   const { requests, addRequest, setStatus } = usePermissions();
-  const { slots, book, cancel } = useConsultations();
-  const { records, addRecord } = useDiscipline();
+  const { bookings, addBooking, cancelBooking } = useConsultations();
+  const { records, addRecord, addDemerit } = useDiscipline();
+  // Cleaning attendance derives its tasks from the live schedule; confirming a
+  // demerit records a −1 point action on the student's discipline page.
+  const attendance = useAttendance(scheduleState.schedule, addDemerit);
 
   const [authScreen, setAuthScreen] = useState<AuthScreen>('splash');
   const [page, setPage] = useState<PageId>('home');
@@ -43,13 +52,42 @@ export function App() {
   function handleSignOut() {
     signOut();
     setAuthScreen('home');
-    setPage('home'); // reset so the next login lands on the dashboard
+    setPage('home'); // reset so the next login lands on the home dashboard
   }
 
-  // --- Signed in: render the active service page inside the shell. ---
+  // --- Signed in ---
   if (currentUser) {
-    const isAdmin = currentUser.role === 'admin';
-    const canEditSchedule = isAdmin || currentUser.isDormHead;
+    const user = currentUser;
+    const isAdmin = user.role === 'admin';
+    const canEditSchedule = isAdmin || user.isDormHead;
+
+    // Cleaning: the admin/dorm head gets the full editor + attendance panel; a
+    // regular student gets a read-only view of their OWN assignment + task.
+    const cleaningPage = canEditSchedule ? (
+      <CleaningPage
+        schedule={scheduleState.schedule}
+        students={scheduleState.students}
+        places={scheduleState.places}
+        onAddStudent={scheduleState.addStudent}
+        onRemoveStudent={scheduleState.removeStudent}
+        onAddPlace={scheduleState.addPlace}
+        onRemovePlace={scheduleState.removePlace}
+        onRegenerate={scheduleState.regenerate}
+        canEdit={canEditSchedule}
+        dorm={user.dorm}
+        attendance={attendance}
+      />
+    ) : (
+      <MyCleaningPage
+        studentName={user.name}
+        schedule={scheduleState.schedule}
+        dorm={user.dorm}
+        task={attendance.taskForStudent(user.name)}
+        onSubmitProof={(photoName) =>
+          attendance.submitProof(user.name, photoName, nowISO())
+        }
+      />
+    );
 
     function renderPage() {
       switch (page) {
@@ -58,28 +96,21 @@ export function App() {
             <ReportsAdminPage reports={reports} onUpdateReport={updateReport} />
           ) : (
             <ReportsStudentPage
-              myReports={getMyReports(reports, currentUser!.name)}
-              onAddReport={(input) => addReport(input, currentUser!.name)}
+              myReports={getMyReports(reports, user.name)}
+              onAddReport={(input) => addReport(input, user.name)}
             />
           );
 
         case 'cleaning':
-          return (
-            <CleaningPage
-              schedule={schedule}
-              onGenerate={generate}
-              canEdit={canEditSchedule}
-              dorm={currentUser!.dorm}
-            />
-          );
+          return cleaningPage;
 
         case 'consultation':
           return (
             <ConsultationPage
-              slots={slots}
-              studentName={currentUser!.name}
-              onBook={(id) => book(id, currentUser!.name)}
-              onCancel={(id) => cancel(id, currentUser!.name)}
+              bookings={bookings}
+              defaultName={user.name}
+              onBook={(input) => addBooking(input, user.name)}
+              onCancel={cancelBooking}
             />
           );
 
@@ -88,8 +119,8 @@ export function App() {
             <PermissionAdminPage requests={requests} onSetStatus={setStatus} />
           ) : (
             <PermissionStudentPage
-              myRequests={getMyPermissions(requests, currentUser!.name)}
-              onSubmit={(input) => addRequest(input, currentUser!.name)}
+              myRequests={getMyPermissions(requests, user.name)}
+              onSubmit={(input) => addRequest(input, user.name)}
             />
           );
 
@@ -97,24 +128,34 @@ export function App() {
           return isAdmin ? (
             <DisciplineAdminPage records={records} onRecord={addRecord} />
           ) : (
-            <DisciplineStudentPage studentName={currentUser!.name} records={records} />
+            <DisciplineStudentPage studentName={user.name} records={records} />
           );
+
+        case 'help':
+          return <FaqPage />;
 
         case 'home':
         default:
-          return <HomePage user={currentUser!} onNavigate={setPage} />;
+          return isAdmin ? (
+            <HomePage user={user} onNavigate={setPage} />
+          ) : (
+            <StudentHomePage user={user} onNavigate={setPage} />
+          );
       }
     }
 
+    if (isAdmin) {
+      return (
+        <AdminShell user={user} page={page} onNavigate={setPage} onSignOut={handleSignOut}>
+          {renderPage()}
+        </AdminShell>
+      );
+    }
+
     return (
-      <AppShell
-        user={currentUser}
-        page={page}
-        onNavigate={setPage}
-        onSignOut={handleSignOut}
-      >
+      <StudentShell user={user} page={page} onNavigate={setPage} onSignOut={handleSignOut}>
         {renderPage()}
-      </AppShell>
+      </StudentShell>
     );
   }
 
