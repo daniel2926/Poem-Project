@@ -1,18 +1,17 @@
 import { useState } from 'react';
-import type { Schedule } from '../types';
-import { INITIAL_SCHEDULE } from '../data/schedule';
+import type { PlaceSchedule } from '../types';
+import { CLEANING_PLACES, EMPTY_SCHEDULE } from '../data/schedule';
+import { ROSTER } from '../data/roster';
+import { generateSchedule } from '../lib/schedule';
 
-// Owns the cleaning schedule and lets the dorm head add/remove assignments.
+// Owns the cleaning schedule. "Generate" produces a fresh, even assignment of
+// every student to exactly one place; clicking again re-generates.
 export function useSchedule() {
-  const [schedule, setSchedule] = useState<Schedule>(INITIAL_SCHEDULE);
+  const [schedule, setSchedule] = useState<PlaceSchedule>(EMPTY_SCHEDULE);
 
-  function addAssignment(day: string, name: string) {
-    setSchedule((prev) => ({ ...prev, [day]: [...prev[day], name] }));
+  function generate() {
+    setSchedule(generateSchedule(ROSTER, CLEANING_PLACES));
   }
 
-  function removeAssignment(day: string, name: string) {
-    setSchedule((prev) => ({ ...prev, [day]: prev[day].filter((n) => n !== name) }));
-  }
-
-  return { schedule, addAssignment, removeAssignment };
+  return { schedule, generate };
 }

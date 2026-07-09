@@ -56,10 +56,70 @@ const PATHS: Record<string, ReactNode> = {
       <path d="M14 8l-8 8a3 3 0 0 0-.8 1.5L4 22l4.5-1.2A3 3 0 0 0 10 20l6-6" />
     </>
   ),
+  home: (
+    <>
+      <path d="M3 9.5 12 3l9 6.5" />
+      <path d="M5 10v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10" />
+      <path d="M9 21v-6h6v6" />
+    </>
+  ),
+  menu: (
+    <>
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <line x1="3" y1="12" x2="21" y2="12" />
+      <line x1="3" y1="18" x2="21" y2="18" />
+    </>
+  ),
+  logout: (
+    <>
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" y1="12" x2="9" y2="12" />
+    </>
+  ),
+  book: (
+    <>
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+    </>
+  ),
+  door: (
+    <>
+      <path d="M6 22V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v18" />
+      <line x1="3" y1="22" x2="21" y2="22" />
+      <circle cx="14" cy="12" r="0.6" fill="currentColor" />
+    </>
+  ),
+  shield: (
+    <>
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </>
+  ),
+  refresh: (
+    <>
+      <polyline points="23 4 23 10 17 10" />
+      <polyline points="1 20 1 14 7 14" />
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+    </>
+  ),
+  clock: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <polyline points="12 7 12 12 15 14" />
+    </>
+  ),
+  award: (
+    <>
+      <circle cx="12" cy="8" r="6" />
+      <path d="M8.21 13.89 7 22l5-3 5 3-1.21-8.11" />
+    </>
+  ),
 };
 
+// `name` is a plain string so nav config can pass icon names freely; unknown
+// names render nothing (an empty svg) rather than breaking the build.
 interface IconProps {
-  name: keyof typeof PATHS;
+  name: string;
   className?: string;
 }
 
@@ -75,7 +135,7 @@ export function Icon({ name, className = 'w-4 h-4' }: IconProps) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      {PATHS[name]}
+      {PATHS[name] ?? null}
     </svg>
   );
 }

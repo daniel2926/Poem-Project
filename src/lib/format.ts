@@ -20,3 +20,11 @@ export function todayISO(): string {
   const dd = String(t.getDate()).padStart(2, '0');
   return `${t.getFullYear()}-${mm}-${dd}`;
 }
+
+/** 'YYYY-MM-DDTHH:mm' -> 'Jul 8, 2026 · 14:30'. Falls back to the raw value. */
+export function formatDateTime(iso: string): string {
+  if (!iso) return '—';
+  const [date, time = ''] = String(iso).split('T');
+  const day = formatDate(date);
+  return time ? `${day} · ${time}` : day;
+}

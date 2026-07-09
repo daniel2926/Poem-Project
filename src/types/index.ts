@@ -47,8 +47,50 @@ export interface Report {
   description: string;
 }
 
-// A weekly cleaning schedule: day of week -> list of assigned student names.
-export type Schedule = Record<string, string[]>;
+// --- Cleaning schedule --------------------------------------------------
+// The dorm head / admin generates an assignment of every student to a
+// cleaning place. `place -> assigned student names`.
+export type PlaceSchedule = Record<string, string[]>;
 
-// Which pre-login screen is showing (splash/home/auth flow).
-export type Screen = 'splash' | 'home' | 'signin' | 'signup';
+// --- Consultation booking (PRIVATE to the student) ----------------------
+// A time slot with the campus consultant. Booking one flips `booked`.
+export interface ConsultationSlot {
+  id: string;
+  date: string; // ISO 'YYYY-MM-DD'
+  time: string; // e.g. '09:00'
+  booked: boolean;
+  bookedBy: string | null; // student name, or null while open
+}
+
+// --- Dorm permission ----------------------------------------------------
+export type PermissionStatus = 'Pending' | 'Approved' | 'Rejected';
+
+export interface PermissionRequest {
+  id: string;
+  student: string; // student name (author)
+  reason: string;
+  destination: string;
+  leaveAt: string; // ISO datetime 'YYYY-MM-DDTHH:mm'
+  returnAt: string; // ISO datetime 'YYYY-MM-DDTHH:mm'
+  status: PermissionStatus;
+}
+
+// --- Discipline ---------------------------------------------------------
+// A violation the admin can record, with the point penalty it carries.
+export interface Violation {
+  id: string;
+  label: string;
+  points: number; // how many points it deducts (a positive number)
+}
+
+// One disciplinary action recorded against a student. Deducts points and
+// assigns a punishment + when it must be served.
+export interface DisciplineRecord {
+  id: string;
+  student: string; // student name
+  violation: string; // the violation label
+  points: number; // points deducted by this record
+  punishment: string;
+  scheduleAt: string; // ISO datetime the punishment is scheduled for
+  date: string; // ISO 'YYYY-MM-DD' the record was created
+}
