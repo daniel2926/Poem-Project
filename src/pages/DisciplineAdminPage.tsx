@@ -10,6 +10,7 @@ import { Section } from '../components/Section';
 import { Field } from '../components/Field';
 import { EmptyState } from '../components/EmptyState';
 import { Icon } from '../components/Icon';
+import { StudentPicker } from '../components/StudentPicker';
 
 interface DisciplineAdminPageProps {
   records: DisciplineRecord[];
@@ -80,17 +81,12 @@ export function DisciplineAdminPage({ records, onRecord }: DisciplineAdminPagePr
 
           <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-4">
             <Field label="Student">
-              <select
-                className={inputClass}
+              <StudentPicker
+                students={ROSTER}
                 value={student}
-                onChange={(e) => setStudent(e.target.value)}
-              >
-                {ROSTER.map((name) => (
-                  <option key={name} value={name}>
-                    {name} — {pointsFor(name, records)} pts
-                  </option>
-                ))}
-              </select>
+                onChange={setStudent}
+                pointsFor={(name) => pointsFor(name, records)}
+              />
             </Field>
 
             <Field label="Violation">
